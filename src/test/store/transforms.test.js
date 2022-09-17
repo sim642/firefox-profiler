@@ -1344,7 +1344,7 @@ describe('"collapse-indirect-recursion" transform', function () {
       dispatch(
         changeSelectedCallNode(
           threadIndex,
-          ['A', 'B', 'B', 'B', 'C'].map((name) => funcNames.indexOf(name))
+          ['A', 'B', 'G', 'B', 'C'].map((name) => funcNames.indexOf(name))
         )
       );
       dispatch(addTransformToStack(threadIndex, collapseIndirectRecursion));

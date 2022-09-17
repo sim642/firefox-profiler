@@ -500,16 +500,13 @@ function _collapseIndirectRecursionInCallNodePath(
   funcIndex: IndexIntoFuncTable,
   callNodePath: CallNodePath
 ) {
-  const newPath = [];
-  let previousFunc;
-  for (let i = 0; i < callNodePath.length; i++) {
-    const pathFunc = callNodePath[i];
-    if (pathFunc !== funcIndex || pathFunc !== previousFunc) {
-      newPath.push(pathFunc);
-    }
-    previousFunc = pathFunc;
+  const firstIndex = callNodePath.indexOf(funcIndex);
+  const lastIndex = callNodePath.lastIndexOf(funcIndex);
+  if (firstIndex === -1) {
+    return callNodePath;
+  } else {
+    return callNodePath.slice(0, firstIndex).concat(callNodePath.slice(lastIndex));
   }
-  return newPath;
 }
 
 function _collapseFunctionSubtreeInCallNodePath(
