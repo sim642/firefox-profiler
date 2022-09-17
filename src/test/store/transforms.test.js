@@ -1423,6 +1423,76 @@ describe('"collapse-indirect-recursion" transform', function () {
       ]);
     });
   });
+
+  describe('indirect filtered implementation', function () {
+    /**
+     *                   A.js      Collapse indirect recursion      A.js
+     *                 ↙     ↘             Func B.js              ↙     ↘
+     *               B.js     G.js            ->               B.js      G.js
+     *             ↙    ↘                                    ↙   ↓   ↘
+     *         H.js      F.js                            D.js   E.js   F.js
+     *          ↓
+     *        C.cpp
+     *        ↙     ↘
+     *    B.js       E.js
+     *     ↓
+     *    D.js
+     */
+    const {
+      profile,
+      funcNamesPerThread: [funcNames],
+    } = getProfileFromTextSamples(`
+      A.js   A.js   A.js   A.js   A.js
+      B.js   B.js   B.js   B.js   G.js
+      H.js   H.js   H.js   F.js
+      C.cpp  C.cpp  C.cpp
+      B.js   E.js
+      D.js
+    `);
+    // Notice in the above fixture how `C.cpp` is actually a leaf stack for the third
+    // sample. This stack still gets collapsed, along with any stack that follows
+    // a recursion collapse.
+    const B = funcNames.indexOf('B.js');
+    const threadIndex = 0;
+    const collapseIndirectRecursion = {
+      type: 'collapse-indirect-recursion',
+      funcIndex: B,
+      implementation: 'js',
+    };
+
+    it('starts as an unfiltered call tree', function () {
+      const { getState } = storeWithProfile(profile);
+      expect(
+        formatTree(selectedThreadSelectors.getCallTree(getState()))
+      ).toEqual([
+        '- A.js (total: 5, self: —)',
+        '  - B.js (total: 4, self: —)',
+        '    - H.js (total: 3, self: —)',
+        '      - C.cpp (total: 3, self: 1)',
+        '        - B.js (total: 1, self: —)',
+        '          - D.js (total: 1, self: 1)',
+        '        - E.js (total: 1, self: 1)',
+        '    - F.js (total: 1, self: 1)',
+        '  - G.js (total: 1, self: 1)',
+      ]);
+    });
+
+    it('can collapse the B function', function () {
+      const { dispatch, getState } = storeWithProfile(profile);
+      dispatch(addTransformToStack(threadIndex, collapseIndirectRecursion));
+      expect(
+        formatTree(selectedThreadSelectors.getCallTree(getState()))
+      ).toEqual([
+        '- A.js (total: 5, self: —)',
+        '  - B.js (total: 4, self: —)',
+        '    - C.cpp (total: 2, self: 1)',
+        '      - E.js (total: 1, self: 1)',
+        '    - D.js (total: 1, self: 1)',
+        '    - F.js (total: 1, self: 1)',
+        '  - G.js (total: 1, self: 1)',
+      ]);
+    });
+  });
 });
 
 describe('expanded and selected CallNodePaths', function () {
