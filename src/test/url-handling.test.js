@@ -1480,6 +1480,11 @@ describe('URL serialization of the transform stack', function () {
         implementation: 'combined',
       },
       {
+        type: 'collapse-indirect-recursion',
+        funcIndex: 10,
+        implementation: 'combined',
+      },
+      {
         type: 'drop-function',
         funcIndex: 11,
       },

@@ -295,6 +295,14 @@ class CallNodeContextMenuImpl extends React.PureComponent<Props> {
         });
         break;
       }
+      case 'collapse-indirect-recursion': {
+        addTransformToStack(threadsKey, {
+          type: 'collapse-indirect-recursion',
+          funcIndex: selectedFunc,
+          implementation,
+        });
+        break;
+      }
       case 'collapse-function-subtree': {
         addTransformToStack(threadsKey, {
           type: 'collapse-function-subtree',
@@ -529,6 +537,19 @@ class CallNodeContextMenuImpl extends React.PureComponent<Props> {
               transform: 'collapse-direct-recursion',
               title: '',
               content: 'Collapse direct recursion',
+            })
+          : null}
+
+        {true || this.isRecursiveCall() // TODO: indirect recursive call
+          ? this.renderTransformMenuItem({
+              l10nId:
+                'CallNodeContextMenu--transform-collapse-indirect-recursion',
+              shortcut: 'R',
+              icon: 'Collapse',
+              onClick: this._handleClick,
+              transform: 'collapse-indirect-recursion',
+              title: '',
+              content: 'Collapse indirect recursion',
             })
           : null}
 

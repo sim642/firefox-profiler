@@ -56,6 +56,7 @@ const SHORT_KEY_TO_TRANSFORM: { [string]: TransformType } = {};
   'drop-function',
   'collapse-resource',
   'collapse-direct-recursion',
+  'collapse-indirect-recursion',
   'collapse-function-subtree',
 ].forEach((transform: TransformType) => {
   // This is kind of an awkward switch, but it ensures we've exhaustively checked that
@@ -82,6 +83,9 @@ const SHORT_KEY_TO_TRANSFORM: { [string]: TransformType } = {};
       break;
     case 'collapse-direct-recursion':
       shortKey = 'rec';
+      break;
+    case 'collapse-indirect-recursion':
+      shortKey = 'irec';
       break;
     case 'collapse-function-subtree':
       shortKey = 'cfs';
@@ -145,7 +149,8 @@ export function parseTransforms(transformString: string): TransformStack {
 
         break;
       }
-      case 'collapse-direct-recursion': {
+      case 'collapse-direct-recursion':
+      case 'collapse-indirect-recursion': {
         // e.g. "rec-js-325"
         const [, implementation, funcIndexRaw] = tuple;
         const funcIndex = parseInt(funcIndexRaw, 10);
@@ -264,6 +269,7 @@ export function stringifyTransforms(transformStack: TransformStack): string {
         case 'collapse-resource':
           return `${shortKey}-${transform.implementation}-${transform.resourceIndex}-${transform.collapsedFuncIndex}`;
         case 'collapse-direct-recursion':
+        case 'collapse-indirect-recursion':
           return `${shortKey}-${transform.implementation}-${transform.funcIndex}`;
         case 'focus-subtree':
         case 'merge-call-node': {
@@ -323,6 +329,7 @@ export function getTransformLabelL10nIds(
       case 'merge-function':
       case 'drop-function':
       case 'collapse-direct-recursion':
+      case 'collapse-indirect-recursion':
       case 'collapse-function-subtree':
         funcIndex = transform.funcIndex;
         break;
@@ -349,6 +356,11 @@ export function getTransformLabelL10nIds(
       case 'collapse-direct-recursion':
         return {
           l10nId: 'TransformNavigator--collapse-direct-recursion',
+          item: funcName,
+        };
+      case 'collapse-indirect-recursion':
+        return {
+          l10nId: 'TransformNavigator--collapse-indirect-recursion',
           item: funcName,
         };
       case 'collapse-function-subtree':

@@ -2062,6 +2062,18 @@ export function handleCallNodeTransformShortcut(
         }
         break;
       }
+      case 'R': {
+        if (true || funcHasRecursiveCall(unfilteredThread, implementation, funcIndex)) { // TODO: indirect check?
+          dispatch(
+            addTransformToStack(threadsKey, {
+              type: 'collapse-indirect-recursion',
+              funcIndex,
+              implementation,
+            })
+          );
+        }
+        break;
+      }
       case 'c': {
         dispatch(
           addTransformToStack(threadsKey, {
